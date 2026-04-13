@@ -1,0 +1,146 @@
+/* Card Component Styles */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardGlow {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.08);
+  }
+  50% {
+    box-shadow: 0 8px 24px rgba(46, 125, 50, 0.12);
+  }
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #f0f0f0;
+  animation: slideInUp 0.6s ease-out backwards;
+}
+
+.card.hoverable {
+  cursor: pointer;
+}
+
+.card.hoverable:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
+  border-color: rgba(46, 125, 50, 0.2);
+}
+
+/* Variants */
+.variant-default {
+  background: white;
+}
+
+.variant-outlined {
+  background: transparent;
+  border: 2px solid #e0e0e0;
+}
+
+.variant-outlined:hover {
+  border-color: #2e7d32;
+  background: rgba(46, 125, 50, 0.02);
+}
+
+.variant-filled {
+  background: linear-gradient(135deg, #f0f9f0 0%, #e8f5e9 100%);
+  border: 1px solid #c8e6c9;
+}
+
+.variant-filled:hover {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+}
+
+.variant-elevated {
+  box-shadow: 0 8px 20px rgba(46, 125, 50, 0.15);
+  border: none;
+}
+
+.variant-elevated:hover {
+  box-shadow: 0 16px 40px rgba(46, 125, 50, 0.25);
+}
+
+.variant-tinted {
+  background: rgba(46, 125, 50, 0.05);
+  border: 1px solid rgba(46, 125, 50, 0.1);
+}
+
+.variant-tinted:hover {
+  background: rgba(46, 125, 50, 0.08);
+  border-color: rgba(46, 125, 50, 0.2);
+}
+
+/* Card Icon */
+.cardIcon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.card.hoverable:hover .cardIcon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Card Title */
+.cardTitle {
+  color: #2e7d32;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+  transition: color 0.3s ease;
+}
+
+.card.hoverable:hover .cardTitle {
+  color: #1b5e20;
+}
+
+/* Card Subtitle */
+.cardSubtitle {
+  color: #999;
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0;
+}
+
+/* Card Content */
+.cardContent {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.cardContent p {
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card {
+    padding: 1.25rem;
+  }
+
+  .cardIcon {
+    font-size: 2rem;
+  }
+
+  .cardTitle {
+    font-size: 1.1rem;
+  }
+
+  .card.hoverable:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+}
