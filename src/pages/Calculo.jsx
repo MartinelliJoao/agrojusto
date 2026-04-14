@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import Layout from '../components/Layout';
-import Button from '../components/Button';
-import Modal from '../components/Modal';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import styles from '../styles/Calculo.module.css';
 import tractorImage from '../assets/images/tractor-machinery.jpg';
@@ -98,11 +96,20 @@ export default function Calculo() {
     }
   };
 
-  const handleMapClick = (e, tipo) => {
-    const { lat, lng } = e.latlng;
+  const handleMapClick = (lat, lng) => {
     setLocacoes(prev => ({
       ...prev,
-      [tipo]: [lat, lng],
+      consumer: [lat, lng],
+    }));
+    const novaDistancia = calcularDistancia(
+      locacoes.producer[0],
+      locacoes.producer[1],
+      lat,
+      lng
+    );
+    setFormData(prev => ({
+      ...prev,
+      distancia: novaDistancia,
     }));
   };
 
@@ -156,8 +163,13 @@ export default function Calculo() {
     setErros({});
   };
 
-  const MapClickHandler = ({ onProducerClick, onConsumerClick }) => {
-    const map = useMap();
+  const MapClickHandler = () => {
+    useMapEvents({
+      click: (e) => {
+        const { lat, lng } = e.latlng;
+        handleMapClick(lat, lng);
+      },
+    });
     return null;
   };
 
@@ -225,7 +237,7 @@ export default function Calculo() {
                     <input
                       type="text"
                       id="distanciaAuto"
-                      value={`${distanciaCalculada} km`}
+                      value={`${formData.distancia || distanciaCalculada} km`}
                       disabled
                       className={styles.inputDisabled}
                     />
@@ -308,13 +320,11 @@ export default function Calculo() {
                 <p>Clique no mapa para marcar produtor e consumidor</p>
               </div>
               <MapContainer
-                center={[-15.7975, -47.8919]}
+                center={locacoes.consumer}
                 zoom={14}
                 className={styles.mapContainer}
-                onClick={(e) => {
-                  // Detectar qual marcador foi clicado alternativamente por UI
-                }}
               >
+                <MapClickHandler />
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -369,6 +379,10 @@ export default function Calculo() {
                     </div>
                   </Popup>
                 </Marker>
+                <Polyline
+                  positions={[locacoes.producer, locacoes.consumer]}
+                  pathOptions={{ color: '#1976d2', weight: 3, dashArray: '8' }}
+                />
               </MapContainer>
 
               <div className={styles.mapLegend}>

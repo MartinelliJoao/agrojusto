@@ -4,123 +4,75 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import Modal from '../components/Modal';
 import styles from '../styles/Aluguel.module.css';
+import marketplaceStyles from '../styles/Marketplace.module.css';
+import { generateEquipamentos, getImage } from '../utils/generateMarketplaceData';
 import farmerImage from '../assets/images/farmer-working.jpg';
 
 export default function Aluguel() {
   const [busca, setBusca] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('todos');
+  const [filtroMarca, setFiltroMarca] = useState('todas');
   const [modalAberto, setModalAberto] = useState(false);
   const [equipamentoSelecionado, setEquipamentoSelecionado] = useState(null);
   const [diasAluguel, setDiasAluguel] = useState(1);
   const [aluguelConfirmado, setAluguelConfirmado] = useState(false);
   const [dataInicio, setDataInicio] = useState('');
+  const [calculoRealizado, setCalculoRealizado] = useState(false);
+  const [favorites, setFavorites] = useState(() => {
+    const saved = localStorage.getItem('agrojusto-favorites-aluguel');
+    return saved ? JSON.parse(saved) : [];
+  });
 
-  // Dados de equipamentos
-  const equipamentos = [
-    {
-      id: 1,
-      nome: 'Trator 100 CV',
-      tipo: 'trator',
-      preco: 450,
-      icon: '🚜',
-      cor: '#FFB74D',
-      descricao: 'Trator potente para trabalhos de aração e transporte',
-      disponivel: true,
-    },
-    {
-      id: 2,
-      nome: 'Arado 3 Discos',
-      tipo: 'arado',
-      preco: 200,
-      icon: '⛏️',
-      cor: '#81C784',
-      descricao: 'Arado ideal para preparação do solo',
-      disponivel: true,
-    },
-    {
-      id: 3,
-      nome: 'Colheitadeira CR 8',
-      tipo: 'colheitadeira',
-      preco: 800,
-      icon: '🌾',
-      cor: '#FFB300',
-      descricao: 'Colheitadeira moderna com tecnologia de ponta',
-      disponivel: true,
-    },
-    {
-      id: 4,
-      nome: 'Plantadeira Pneumática',
-      tipo: 'plantadeira',
-      preco: 300,
-      icon: '🌱',
-      cor: '#4CAF50',
-      descricao: 'Plantadeira de precisão para sementes',
-      disponivel: true,
-    },
-    {
-      id: 5,
-      nome: 'Pulverizador 400L',
-      tipo: 'pulverizador',
-      preco: 150,
-      icon: '💨',
-      cor: '#29B6F6',
-      descricao: 'Pulverizador com tanque de 400 litros',
-      disponivel: true,
-    },
-    {
-      id: 6,
-      nome: 'Grade Aradora',
-      tipo: 'arado',
-      preco: 250,
-      icon: '⚙️',
-      cor: '#757575',
-      descricao: 'Grade aradora para nivelamento de solo',
-      disponivel: false,
-    },
-    {
-      id: 7,
-      nome: 'Trator Compacto 60 CV',
-      tipo: 'trator',
-      preco: 300,
-      icon: '🚜',
-      cor: '#FFB74D',
-      descricao: 'Trator compacto para pequenas propriedades',
-      disponivel: true,
-    },
-    {
-      id: 8,
-      nome: 'Distribuidora de Esterco',
-      tipo: 'acessorio',
-      preco: 180,
-      icon: '🔄',
-      cor: '#A1887F',
-      descricao: 'Distribuidora para espalhamento de esterco',
-      disponivel: true,
-    },
-  ];
+  const fallbackImage = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=500&q=60';
+
+  const toggleFavorite = (equipId) => {
+    setFavorites((prev) => {
+      const updated = prev.includes(equipId)
+        ? prev.filter((id) => id !== equipId)
+        : [...prev, equipId];
+      localStorage.setItem('agrojusto-favorites-aluguel', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Gera 80 equipamentos automaticamente
+  const equipamentos = generateEquipamentos();
 
   const tipos = [
     { valor: 'todos', label: 'Todos os Equipamentos' },
     { valor: 'trator', label: '🚜 Tratores' },
     { valor: 'arado', label: '⛏️ Arados' },
-    { valor: 'colheitadeira', label: '🌾 Colheitadeiras' },
+    { valor: 'grade', label: '⚙️ Grades' },
     { valor: 'plantadeira', label: '🌱 Plantadeiras' },
     { valor: 'pulverizador', label: '💨 Pulverizadores' },
+    { valor: 'colheitadeira', label: '🌾 Colheitadeiras' },
+    { valor: 'distribuidor', label: '🔄 Distribuidores' },
+    { valor: 'carroceria', label: '📦 Carrocerias' },
+    { valor: 'ensiladeira', label: '📋 Ensiladeiras' },
     { valor: 'acessorio', label: '⚙️ Acessórios' },
   ];
 
-  // Filtrar equipamentos
+  // Extrai marcas únicas dos equipamentos gerados
+  const marcas = ['todas', ...new Set(equipamentos.map(e => e.marca))];
+
+  // Equipamentos em destaque (mais alugados)
+  const featuredEquipamentos = [...equipamentos]
+    .sort((a, b) => b.alugueis - a.alugueis)
+    .slice(0, 6);
+
   const equipamentosFiltrados = equipamentos.filter(equip => {
     const matchBusca = equip.nome.toLowerCase().includes(busca.toLowerCase()) ||
-                      equip.descricao.toLowerCase().includes(busca.toLowerCase());
+                      equip.marca.toLowerCase().includes(busca.toLowerCase());
     const matchTipo = filtroTipo === 'todos' || equip.tipo === filtroTipo;
-    return matchBusca && matchTipo;
+    const matchMarca = filtroMarca === 'todas' || equip.marca === filtroMarca;
+    return matchBusca && matchTipo && matchMarca;
   });
 
   const abrirModal = (equip) => {
     setEquipamentoSelecionado(equip);
     setModalAberto(true);
     setAluguelConfirmado(false);
+    setCalculoRealizado(false);
     setDiasAluguel(1);
     setDataInicio(new Date().toISOString().split('T')[0]);
   };
@@ -132,7 +84,20 @@ export default function Aluguel() {
   };
 
   const confirmarAluguel = () => {
-    if (dataInicio && diasAluguel > 0) {
+    if (dataInicio && diasAluguel > 0 && equipamentoSelecionado) {
+      // Salvar no histórico
+      const history = JSON.parse(localStorage.getItem('agrojusto-history') || '[]');
+      const entry = {
+        id: Date.now(),
+        type: 'Máquina alugada',
+        name: equipamentoSelecionado.nome,
+        category: 'Aluguel',
+        date: new Date().toLocaleDateString('pt-BR'),
+        value: `R$ ${precoTotal.toLocaleString('pt-BR')}`,
+      };
+      history.unshift(entry);
+      localStorage.setItem('agrojusto-history', JSON.stringify(history));
+      
       setAluguelConfirmado(true);
       setTimeout(fecharModal, 3000);
     }
@@ -140,76 +105,192 @@ export default function Aluguel() {
 
   const precoTotal = equipamentoSelecionado ? equipamentoSelecionado.preco * diasAluguel : 0;
 
+  const calcularAluguel = () => {
+    if (dataInicio && diasAluguel > 0) {
+      setCalculoRealizado(true);
+    }
+  };
+
   return (
     <Layout>
-      <div className={styles.pageBackground} style={{
-        backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(46, 125, 50, 0.5) 100%), url(${farmerImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }}>
-        <div className={styles.container}>
-          {/* Header */}
-          <div className={styles.header}>
-            <h1>🏪 Marketplace de Equipamentos</h1>
-            <p>Alugue equipamentos agrícolas de qualidade com preços justo</p>
-          </div>
+      <div className={styles.pageRental}>
+        <div className={styles.pageHeader}>
+          <p className={styles.pageOverline}>Equipamentos</p>
+          <h1 className={styles.pageTitle}>Aluguel de máquinas agrícolas</h1>
+          <p className={styles.pageSubtitle}>
+            Acesse um catálogo completo de equipamentos de marcas líderes. Filtre por tipo e marca para encontrar a máquina perfeita.
+          </p>
+        </div>
 
-          {/* Barra de Busca e Filtros */}
-          <div className={styles.searchFilterBar}>
-            <div className={styles.searchBox}>
-              <input
-                type="text"
-                placeholder="🔍 Buscar equipamentos..."
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                className={styles.searchInput}
-              />
+      {/* SEÇÃO DE DESTAQUE - MAIS ALUGADOS */}
+      <section className={marketplaceStyles.featuredSection}>
+        <div className={marketplaceStyles.featuredHeader}>
+          <h2 className={marketplaceStyles.featuredTitle}>⭐ Equipamentos mais alugados</h2>
+          <p className={marketplaceStyles.featuredSubtitle}>Máquinas mais procuradas pelos agricultores</p>
+        </div>
+        <div className={marketplaceStyles.featuredGrid}>
+          {featuredEquipamentos.map((equip) => (
+            <div key={equip.id} className={marketplaceStyles.featuredCard} onClick={() => abrirModal(equip)}>
+              <div className={marketplaceStyles.featuredImageWrapper}>
+                <img src={getImage(equip)} alt={equip.nome} className={marketplaceStyles.featuredImage} onError={(e) => { e.target.src = fallbackImage; }} />
+                {equip.desconto > 0 && (
+                  <div className={marketplaceStyles.discountBadge}>-{equip.desconto}%</div>
+                )}
+                <button
+                  type="button"
+                  className={marketplaceStyles.favoriteButton}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite(equip.id);
+                  }}
+                  title={favorites.includes(equip.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                >
+                  {favorites.includes(equip.id) ? '❤️' : '🤍'}
+                </button>
+              </div>
+              <div className={marketplaceStyles.featuredContent}>
+                <h3>{equip.nome}</h3>
+                <p className={marketplaceStyles.brand}>{equip.marca}</p>
+                <div className={marketplaceStyles.rating}>
+                  <span className={marketplaceStyles.stars}>⭐ {equip.rating}</span>
+                  <span className={marketplaceStyles.vendas}>({equip.alugueis})</span>
+                </div>
+                <p className={marketplaceStyles.frete}>{equip.frete}</p>
+                <div className={marketplaceStyles.priceSection}>
+                  <span className={marketplaceStyles.price}>R$ {equip.preco.toFixed(2)}/dia</span>
+                </div>
+                <button type="button" className={marketplaceStyles.featuredButton} disabled={!equip.disponivel}>
+                  {equip.disponivel ? '🎯 Alugar' : '❌ Indisponível'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className={marketplaceStyles.marketplaceContainer}>
+        {/* SIDEBAR COM FILTROS */}
+        <aside className={marketplaceStyles.filterSidebar}>
+          <div className={marketplaceStyles.filterSection}>
+            <h3 className={marketplaceStyles.filterTitle}>🔍 Buscar</h3>
+            <input
+              type="text"
+              placeholder="Nome ou marca"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className={marketplaceStyles.sidebarSearchInput}
+            />
             </div>
 
-            <div className={styles.filterBox}>
-              <select
-                value={filtroTipo}
-                onChange={(e) => setFiltroTipo(e.target.value)}
-                className={styles.filterSelect}
-              >
+            <div className={marketplaceStyles.filterSection}>
+              <h3 className={marketplaceStyles.filterTitle}>🛠️ Tipo</h3>
+              <div className={marketplaceStyles.filterOptions}>
+                <label className={marketplaceStyles.filterLabel}>
+                  <input
+                    type="radio"
+                    name="tipo"
+                    value="todos"
+                    checked={filtroTipo === 'todos'}
+                    onChange={(e) => setFiltroTipo(e.target.value)}
+                    className={marketplaceStyles.filterRadio}
+                  />
+                  <span>Todos os tipos</span>
+                </label>
                 {tipos.map(tipo => (
-                  <option key={tipo.valor} value={tipo.valor}>
-                    {tipo.label}
+                  <label key={tipo.valor} className={marketplaceStyles.filterLabel}>
+                    <input
+                      type="radio"
+                      name="tipo"
+                      value={tipo.valor}
+                      checked={filtroTipo === tipo.valor}
+                      onChange={(e) => setFiltroTipo(e.target.value)}
+                      className={marketplaceStyles.filterRadio}
+                    />
+                    <span>{tipo.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className={marketplaceStyles.filterSection}>
+              <h3 className={marketplaceStyles.filterTitle}>🏭 Marca</h3>
+              <select 
+                value={filtroMarca} 
+                onChange={(e) => setFiltroMarca(e.target.value)} 
+                className={marketplaceStyles.filterSelectSidebar}
+              >
+                {marcas.map(marca => (
+                  <option key={marca} value={marca}>
+                    {marca === 'todas' ? 'Todas as marcas' : marca}
                   </option>
                 ))}
               </select>
             </div>
 
-            <div className={styles.resultCount}>
-              {equipamentosFiltrados.length} equipamento(s) encontrado(s)
-            </div>
-          </div>
+            <button 
+              onClick={() => {
+                setBusca('');
+                setFiltroTipo('todos');
+                setFiltroMarca('todas');
+              }}
+              className={marketplaceStyles.filterResetButton}
+            >
+              Limpar filtros
+            </button>
+          </aside>
 
-          {/* Grid de Cards */}
-          <div className={styles.cardsGrid}>
+          {/* CONTEÚDO PRINCIPAL */}
+          <div className={marketplaceStyles.marketplaceContent}>
+            <div className={marketplaceStyles.resultsSummary}>
+              <h2>{equipamentosFiltrados.length} equipamentos encontrados</h2>
+              <p>Disponível para aluguel imediato</p>
+            </div>
+
+            <div className={marketplaceStyles.cardsGrid}>
             {equipamentosFiltrados.length > 0 ? (
               equipamentosFiltrados.map(equip => (
                 <div key={equip.id} className={styles.card}>
-                  <div 
-                    className={styles.cardImage}
-                    style={{ backgroundColor: equip.cor }}
-                  >
-                    <div className={styles.equipmentIcon}>{equip.icon}</div>
+                  <div className={styles.cardImage}>
+                    <img 
+                      src={getImage(equip)} 
+                      alt={equip.nome}
+                      className={styles.cardImageImg}
+                      onError={(e) => { e.target.src = fallbackImage; }}
+                    />
+                    {equip.desconto > 0 && (
+                      <div className={marketplaceStyles.discountBadge}>-{equip.desconto}%</div>
+                    )}
                     {!equip.disponivel && (
                       <div className={styles.indisponivel}>Indisponível</div>
                     )}
+                    <button
+                      type="button"
+                      className={marketplaceStyles.favoriteButton}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(equip.id);
+                      }}
+                      title={favorites.includes(equip.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                    >
+                      {favorites.includes(equip.id) ? '❤️' : '🤍'}
+                    </button>
                   </div>
 
                   <div className={styles.cardContent}>
+                    <div className={`${styles.availabilityBadge} ${equip.disponivel ? styles.available : styles.unavailable}`}>
+                      {equip.disponivel ? '✓ Disponível' : '✕ Indisponível'}
+                    </div>
+                    <p className={styles.cardMarca}>{equip.marca}</p>
                     <h3 className={styles.cardTitle}>{equip.nome}</h3>
-                    <p className={styles.cardDescription}>{equip.descricao}</p>
+                    
+                    <div className={styles.cardRating}>
+                      <span>⭐ {equip.rating}</span>
+                      <span className={styles.rentalCount}>({equip.alugueis})</span>
+                    </div>
+                    <p className={styles.cardFrete}>{equip.frete}</p>
                     
                     <div className={styles.cardPrice}>
-                      <span className={styles.priceLabel}>Por dia:</span>
-                      <span className={styles.priceValue}>
-                        R$ {equip.preco.toLocaleString('pt-BR')}
-                      </span>
+                      <span className={styles.priceLabel}>R$ {equip.preco.toLocaleString('pt-BR')}/dia</span>
                     </div>
 
                     <button
@@ -230,8 +311,9 @@ export default function Aluguel() {
               </div>
             )}
           </div>
+            </div>
+          </div>
         </div>
-      </div>
 
       {/* Modal */}
       {modalAberto && equipamentoSelecionado && (
@@ -324,9 +406,19 @@ export default function Aluguel() {
                     <span>Total:</span>
                     <span>R$ {precoTotal.toLocaleString('pt-BR')}</span>
                   </div>
+                  <div className={styles.calcNote}>
+                    {calculoRealizado ? 'Cálculo realizado para a data selecionada.' : 'Clique em Calcular aluguel para confirmar o valor.'}
+                  </div>
                 </div>
 
                 <div className={styles.modalButtons}>
+                  <button 
+                    type="button"
+                    className={styles.modalCalculateBtn}
+                    onClick={calcularAluguel}
+                  >
+                    Calcular aluguel
+                  </button>
                   <button 
                     className={styles.modalCancelBtn}
                     onClick={fecharModal}

@@ -1,0 +1,143 @@
+.chatModal {
+  max-width: 680px;
+  width: 100%;
+}
+
+.chatWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.chatHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e6f0e8;
+}
+
+.agentBadge {
+  display: inline-flex;
+  padding: 0.5rem 0.9rem;
+  background: rgba(46, 125, 50, 0.12);
+  color: #1b5e20;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.messagesArea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.messageBubble {
+  max-width: 85%;
+  line-height: 1.5;
+  padding: 1rem 1.2rem;
+  border-radius: 20px;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.systemBubble {
+  align-self: flex-start;
+  background: #f1fbf5;
+  color: #1b5e20;
+  border-top-left-radius: 4px;
+}
+
+.userBubble {
+  align-self: flex-end;
+  background: #2e7d32;
+  color: white;
+  border-top-right-radius: 4px;
+}
+
+.typingDots {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.typingDots span {
+  width: 8px;
+  height: 8px;
+  background: rgba(27, 94, 32, 0.8);
+  border-radius: 50%;
+  animation: blink 1.2s infinite ease-in-out;
+}
+
+.typingDots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typingDots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.chatForm {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e6f0e8;
+}
+
+.chatInput {
+  width: 100%;
+  padding: 1rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #d4e8d7;
+  background: #f8fdfa;
+  font-size: 0.95rem;
+  color: #1b5e20;
+}
+
+.chatInput:focus {
+  outline: none;
+  border-color: #1b5e20;
+  box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1);
+}
+
+.chatButton {
+  padding: 1rem 1.4rem;
+  border-radius: 999px;
+  border: none;
+  background: #1b5e20;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.chatButton:hover {
+  background: #264b19;
+}
+
+@media (max-width: 720px) {
+  .chatForm {
+    grid-template-columns: 1fr;
+  }
+
+  .chatButton {
+    width: 100%;
+  }
+}

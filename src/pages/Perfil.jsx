@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -6,13 +8,8 @@ import Modal from '../components/Modal';
 import styles from '../styles/Perfil.module.css';
 
 export default function Perfil() {
-  const [produtor, setProdutor] = useState({
-    nome: 'João da Silva Santos',
-    email: 'joao@agrojusto.com.br',
-    telefone: '(11) 99999-8888',
-    foto: '👨‍🌾',
-    localizacao: 'Ribeirão Preto, SP',
-  });
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const [produtos, setProdutos] = useState([
     {
@@ -109,8 +106,9 @@ export default function Perfil() {
     handleFecharModal();
   };
 
-  const handleRemoverProduto = (id) => {
-    setProdutos(produtos.filter(p => p.id !== id));
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -120,23 +118,32 @@ export default function Perfil() {
           {/* Header do Perfil */}
           <div className={styles.profileHeader}>
             <div className={styles.profileLeft}>
-              <div className={styles.profileAvatar}>{produtor.foto}</div>
+              <div className={styles.profileAvatar}>👨‍🌾</div>
               <div className={styles.profileInfo}>
-                <h1 className={styles.profileName}>{produtor.nome}</h1>
-                <p className={styles.profileLocation}>📍 {produtor.localizacao}</p>
+                <h1 className={styles.profileName}>{user?.nome || 'Usuário'}</h1>
+                <p className={styles.profileLocation}>📍 Agro Justo</p>
                 <p className={styles.profileContact}>
-                  📧 {produtor.email} | 📞 {produtor.telefone}
+                  📧 {user?.email || 'email@exemplo.com'}
                 </p>
               </div>
             </div>
-            <div className={styles.profileStats}>
-              <div className={styles.statCard}>
-                <div className={styles.statNumber}>{produtos.length}</div>
-                <div className={styles.statLabel}>Produtos</div>
-              </div>
-              <div className={styles.statCard}>
-                <div className={styles.statNumber}>{historico.length}</div>
-                <div className={styles.statLabel}>Atividades</div>
+            <div className={styles.profileActions}>
+              <Button
+                variant="danger"
+                onClick={handleLogout}
+                style={{ marginBottom: '1rem' }}
+              >
+                🚪 Sair
+              </Button>
+              <div className={styles.profileStats}>
+                <div className={styles.statCard}>
+                  <div className={styles.statNumber}>{produtos.length}</div>
+                  <div className={styles.statLabel}>Produtos</div>
+                </div>
+                <div className={styles.statCard}>
+                  <div className={styles.statNumber}>{historico.length}</div>
+                  <div className={styles.statLabel}>Atividades</div>
+                </div>
               </div>
             </div>
           </div>
